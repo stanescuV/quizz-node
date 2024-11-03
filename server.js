@@ -1,13 +1,13 @@
-import express from 'express'
-
-const app = express();
+// const express = require('express');
+const WebSocket = require('ws');
+// const app = express();
 const port = 3001;
+const wss = new WebSocket.Server({ port: port });
 
-app.get('/quizz', (req, res) => {
-    
-    res.send('Hello World!')
+wss.on('connection', (connection) => {
+    console.log('A client has connected.')
+    connection.on('message',(msg) => console.log( msg.toString() ));
 })
 
-app.listen(port, () => {
-    console.log(`Example app listening on port ${port}`)
-})
+
+
