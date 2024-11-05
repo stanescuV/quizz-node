@@ -8,7 +8,9 @@ wss.on('connection', (connection) => {
     console.log('A client has connected.')
     connection.on('message', (msg) => {
         try {
-            const parsedMessage = JSON.parse(msg); 
+            const parsedMessage = JSON.parse(msg); // {question1: {}}
+            // We have the answer but we don't know admin answer ? 
+
             console.log('Received message:', parsedMessage); 
         } catch (error) {
             console.error('Error parsing message:', error);
