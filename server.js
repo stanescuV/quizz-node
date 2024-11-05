@@ -1,11 +1,21 @@
 // const express = require('express');
 const WebSocket = require('ws');
+
+
+//firestore
+const {getFormsData} = require('./formService');
+
 // const app = express();
 const port = 3001;
 const wss = new WebSocket.Server({ port: port });
 
-wss.on('connection', (connection) => {
+
+
+
+wss.on('connection', async (connection) => {
     console.log('A client has connected.')
+    getFormsData();
+    
     connection.on('message', (msg) => {
         try {
             const parsedMessage = JSON.parse(msg); // {question1: {}}
