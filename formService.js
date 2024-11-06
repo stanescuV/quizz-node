@@ -27,7 +27,7 @@ const getFormsDataWithId = async (id) => {
             return null;
         }
 
-        const formData = { id: docSnapshot.id, ...docSnapshot.data() };
+        const formData = docSnapshot.data();
         return formData;
     } catch (error) {
         console.error("Error fetching form by ID:", error);

@@ -1,4 +1,5 @@
 // const express = require('express');
+const {verifyAnswers} = require('./formsLogic');
 const WebSocket = require('ws');
 
 
@@ -13,15 +14,18 @@ const wss = new WebSocket.Server({ port: port });
 
 
 wss.on('connection', async (connection) => {
-    console.log('A client has connected.')
-    console.log(await getFormsDataWithId('9jqqgVqGd02su29BA6eb')) 
+    console.log('A client has connected.');
     
-    connection.on('message', (msg) => {
+    connection.on('message', async (msg) => {
         try {
-            const parsedMessage = JSON.parse(msg); // {question1: {}}
-            // We have the answer but we don't know admin answer ? 
+            const userAnswer = JSON.parse(msg); // {question1: {}}
+            const id = userAnswer.id; 
+            const hostAnswerForm = await getFormsDataWithId(id);
+
+            const results = verifyAnswers(userAnswer, hostAnswerForm);
+
             
-            console.log('Received message:', parsedMessage); 
+            console.log(results);
         } catch (error) {
             console.error('Error parsing message:', error);
         }
