@@ -1,10 +1,14 @@
 const { db } = require("./firestore");
 
+const formsRef = db.collection('forms');
+
+//get all forms from the DB // no use case ftm 
 const getFormsData = async () => {
     try {
-        const formsRef = db.collection('forms');
-        const response = await formsRef.get();
-        const formsData = response.docs[0]._fieldsProto;
+
+        const response = (await formsRef.get()).docs;
+
+        const formsData = response[0]._fieldsProto;
 
         console.log(formsData)
     } catch (err) {
@@ -13,6 +17,23 @@ const getFormsData = async () => {
 }
 
 //make endpoint to get form by using the id
+const getFormsDataWithId = async (id) => {
+    try {
+        const formRef = formsRef.doc(id); // Reference to specific document by ID
+        const docSnapshot = await formRef.get();
+
+        if (!docSnapshot.exists) {
+            console.log(`No document found with ID: ${id}`);
+            return null;
+        }
+
+        const formData = { id: docSnapshot.id, ...docSnapshot.data() };
+        return formData;
+    } catch (error) {
+        console.error("Error fetching form by ID:", error);
+        return null;
+    }
+};
 
 
-module.exports = {getFormsData}
+module.exports = {getFormsData, getFormsDataWithId}
