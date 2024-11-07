@@ -15,10 +15,22 @@
  *   - question {string}: The question text.
  *   - isCorrect {boolean}: True if the user's answer is correct; false otherwise.
  */
-//to do 
+
+const { convertFormEntityToFormular } = require("./convertEntities");
+
 function verifyAnswers(userAnswer, adminForm) {
-    const results = [];
-  
-  }
+    //Make admin form as userAnswer so that it's easier to iterate over
+    const adminFormConverted = convertFormEntityToFormular(adminForm)
+    // console.log(userAnswer, adminFormConverted)
+    const selectedAnswerUser = userAnswer['question1'].selectedOption; 
+    const correctAnswer = adminFormConverted['question1'].selectedOption;
+    if(selectedAnswerUser === correctAnswer){
+        console.log('Bravo raspuns corect')
+    } else { 
+        console.log('Raspuns gresit')
+    }
+
+
+}
 
 module.exports = {verifyAnswers}

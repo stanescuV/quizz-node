@@ -21,11 +21,10 @@ wss.on('connection', async (connection) => {
             const userAnswer = JSON.parse(msg); // {question1: {}}
             const id = userAnswer.id; 
             const hostAnswerForm = await getFormsDataWithId(id);
-
-            const results = verifyAnswers(userAnswer, hostAnswerForm);
+            // console.log(userAnswer, hostAnswerForm)
+            verifyAnswers(userAnswer, hostAnswerForm);
 
             
-            console.log(results);
         } catch (error) {
             console.error('Error parsing message:', error);
         }
