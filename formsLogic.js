@@ -1,25 +1,37 @@
-/**
- */
+
 
 const { convertFormEntityToFormular } = require("./convertEntities");
-let resultsOfVerification = {};
-
+let resultOfVerification = {};
+/**
+ * Verifies the user answer and returns a resultOfVerification object
+ * 
+ * @returns resultOfVerification {
+ * - currentQuestion : string = ' 2 + 2 ? ',
+ * - currentQuestionKey: string = question1
+ * - isCorrect : boolean = true
+ * - selectedOption : string = 'option3'
+ * }
+ */
 function verifyAnswers(userAnswer, adminForm) {
     //Make admin form as userAnswer so that it's easier to iterate over
     const adminFormConverted = convertFormEntityToFormular(adminForm)
     
-    
     for(let i = 0 ; i < Object.keys(adminFormConverted).length ; i++){
-        const selectedAnswerUser = userAnswer[`question` + (1 + i)].selectedOption; 
-        const correctAnswer = adminFormConverted[`question` + (1 + i)].selectedOption;
-        console.log(selectedAnswerUser, correctAnswer)
-        
-        if(selectedAnswerUser === correctAnswer){
-            console.log('Bravo raspuns corect')
-        } else { 
-            console.log('Raspuns gresit')
+        const currentQuestion = `question` + (1 + i)
+        const selectedAnswerUser = userAnswer[currentQuestion].selectedOption; 
+        const correctAnswer = adminFormConverted[currentQuestion].selectedOption;
+        console.log(selectedAnswerUser, correctAnswer);
+
+        resultOfVerification[currentQuestion] = {
+            currentQuestion: adminFormConverted[currentQuestion].question,
+            currentQuestionKey: currentQuestion,
+            isCorrect: selectedAnswerUser === correctAnswer,
+            selectedOption: selectedAnswerUser
         }
     }
+
+    console.log(resultOfVerification);
+    return resultOfVerification;
 }
 
 module.exports = {verifyAnswers}

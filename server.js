@@ -21,8 +21,10 @@ wss.on('connection', async (connection) => {
             const userAnswer = JSON.parse(msg); // {question1: {}}
             const id = userAnswer.id; 
             const hostAnswerForm = await getFormsDataWithId(id);
-            console.log(userAnswer, hostAnswerForm)
-            verifyAnswers(userAnswer, hostAnswerForm);
+            console.log(userAnswer, hostAnswerForm);
+            
+            const responseToAnswers = verifyAnswers(userAnswer, hostAnswerForm);
+            connection.send(JSON.stringify(responseToAnswers));
 
             
         } catch (error) {
