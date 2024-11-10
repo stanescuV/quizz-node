@@ -23,8 +23,6 @@ function verifyAnswers(userAnswer, adminForm) {
         console.log(selectedAnswerUser, correctAnswer);
 
         resultOfVerification[currentQuestion] = {
-            currentQuestion: adminFormConverted[currentQuestion].question,
-            currentQuestionKey: currentQuestion,
             isCorrect: selectedAnswerUser === correctAnswer,
             selectedOption: selectedAnswerUser
         }
