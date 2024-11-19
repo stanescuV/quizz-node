@@ -20,16 +20,19 @@ function verifyAnswers(userAnswer, adminForm) {
         const currentQuestion = `question` + (1 + i)
         const selectedAnswerUser = userAnswer[currentQuestion].selectedOption; 
         const correctAnswer = adminFormConverted[currentQuestion].selectedOption;
-        console.log(selectedAnswerUser, correctAnswer);
+        // console.log(selectedAnswerUser, correctAnswer);
 
         resultOfVerification[currentQuestion] = {
+            question : userAnswer[currentQuestion].question,
             isCorrect: selectedAnswerUser === correctAnswer,
-            selectedOption: selectedAnswerUser
+            selectedOption: selectedAnswerUser,
         }
     }
-
-    console.log(resultOfVerification);
-    return resultOfVerification;
+    
+    let formReadyToSend = {[userAnswer.id]: {...resultOfVerification,}}
+    
+    console.log(formReadyToSend);
+    return formReadyToSend;
 }
 
 module.exports = {verifyAnswers}

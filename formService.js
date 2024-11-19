@@ -36,4 +36,19 @@ const getFormsDataWithId = async (id) => {
 };
 
 
+const insertAnswersIntoFormsTable = async (idForm, answers ) => {
+    const form = formsRef.doc(idForm);
+
+    try{
+
+    } catch{
+
+    }
+    
+   
+    
+    
+}
+
+
 module.exports = {getFormsData, getFormsDataWithId}
