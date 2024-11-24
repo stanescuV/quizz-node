@@ -1,6 +1,8 @@
 //firestore
 const admin = require('firebase-admin');
 const credentials = require('./key.json');
+const FieldValue = admin.firestore.FieldValue;
+
 
 admin.initializeApp({
     credential: admin.credential.cert(credentials)
@@ -9,4 +11,4 @@ admin.initializeApp({
 //collection
 const db = admin.firestore();
 
-module.exports = { db };
+module.exports = { db, FieldValue };

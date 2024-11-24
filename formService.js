@@ -1,6 +1,8 @@
-const { db } = require("./firestore");
+const { db, FieldValue } = require("./firestore");
 
 const formsRef = db.collection('forms');
+const sessionsRef = db.collection('sessions');
+const errorsRef = db.collection('errors');
 
 //get all forms from the DB // no use case ftm 
 const getFormsData = async () => {
@@ -35,20 +37,44 @@ const getFormsDataWithId = async (id) => {
     }
 };
 
+//TODO: De mutat pe client //CREATE SESSION FUNCTION
+const insertNewAnswersIntoSessionTable = async (idSession, answers ) => {
 
-const insertAnswersIntoFormsTable = async (idForm, answers ) => {
-    const form = formsRef.doc(idForm);
-
+    /*
+    *
+    answers = {
+    '9jqqgVqGd02su29BA6eb': {
+        question1: { question: 'qqq', isCorrect: false, selectedOption: 'option1' },
+        question2: { question: 'qqq', isCorrect: true, selectedOption: 'option1' }
+    }
+    */
+    const sessionRef = sessionsRef.doc(idSession);
+    const session = Object.values(answers);
     try{
-
-    } catch{
+        await sessionRef.update({
+            answers: FieldValue.arrayUnion(...session)
+          });
+    } catch(err){
+        console.log('There was an error while inserting the answers', err)
 
     }
-    
-   
-    
-    
+ 
 }
 
 
-module.exports = {getFormsData, getFormsDataWithId}
+const insertIntoErrors = async (err) => {
+
+
+    const error = { date: (new Date()).toString(), errMessage: JSON.stringify(err)}
+
+    try{
+        sessionsRef.add(error)
+    } catch(err){
+        console.log('There was an error while inserting the error', err)
+
+    }
+ 
+}
+
+
+module.exports = {getFormsData, getFormsDataWithId, insertNewAnswersIntoSessionTable, insertIntoErrors}
