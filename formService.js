@@ -37,7 +37,26 @@ const getFormsDataWithId = async (id) => {
     }
 };
 
-//TODO: De mutat pe client //CREATE SESSION FUNCTION
+const getSessionWithId = async (idSession) => {
+    try {
+        const sessionRef = sessionsRef.doc(idSession);
+        const docSnapshot = await sessionRef.get();
+
+        if (!docSnapshot.exists) {
+            console.log(`No document found with ID: ${id}`);
+            return null;
+        }
+
+        const sessionData = docSnapshot.data();
+        return sessionData;
+    } 
+    catch (error) {
+        console.error("Error fetching form by ID:", error);
+        return null;
+    }
+};
+
+
 const insertNewAnswersIntoSessionTable = async (idSession, answers ) => {
 
     /*
@@ -77,4 +96,4 @@ const insertIntoErrors = async (err) => {
 }
 
 
-module.exports = {getFormsData, getFormsDataWithId, insertNewAnswersIntoSessionTable, insertIntoErrors}
+module.exports = {getFormsData, getFormsDataWithId, insertNewAnswersIntoSessionTable, insertIntoErrors, getSessionWithId}

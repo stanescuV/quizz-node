@@ -4,7 +4,7 @@ const WebSocket = require('ws');
 
 
 //firestore
-const {getFormsData, getFormsDataWithId, insertNewAnswersIntoSessionTable, insertIntoErrors} = require('./formService');
+const {getFormsData, getFormsDataWithId, insertNewAnswersIntoSessionTable, insertIntoErrors, getSessionWithId} = require('./formService');
 
 // const app = express();
 const port = 3001;
@@ -42,19 +42,19 @@ wss.on('connection', async (connection) => {
             
             try{
                 
-                const idForm = userAnswer.id; 
-                
-                const hostAnswerForm = await getFormsDataWithId(idForm);
-                // console.log(userAnswer, hostAnswerForm);
+                const idSession = userAnswer.id; 
+                const session = await getSessionWithId(idSession);
+                const hostAnswerForm = await getFormsDataWithId(session.idForm);
                 
                 const responseToAnswers = verifyAnswers(userAnswer, hostAnswerForm);
-                //LoWn61m555084nXgGRDi
-                insertNewAnswersIntoSessionTable('LoWn61m555084nXgGRDi', responseToAnswers)
+                
+                insertNewAnswersIntoSessionTable(idSession, responseToAnswers)
                 return connection.send(JSON.stringify(responseToAnswers));
                 
             
             } catch (err){
-
+                
+                //inserts error log into db on firestore
                 insertIntoErrors(err);
                 return connection.send('Error while sending the answers');
             }
