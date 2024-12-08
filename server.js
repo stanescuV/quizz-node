@@ -4,7 +4,7 @@ const WebSocket = require('ws');
 
 
 //firestore
-const {getFormsData, getFormsDataWithId, insertNewAnswersIntoSessionTable, insertIntoErrors, getSessionWithId} = require('./formService');
+const {getFormsData, getFormsDataWithId, insertNewAnswersIntoSessionTable, insertIntoErrors, getSessionDataWithId} = require('./formService');
 
 // const app = express();
 const port = 3001;
@@ -15,7 +15,6 @@ const allConnections = {adminConnections: [], clientConnections: []};
 
 
 wss.on('connection', async (connection) => {
-    console.log('A client has connected.');
     
     connection.on('message', async (msg) => {
         
@@ -28,9 +27,20 @@ wss.on('connection', async (connection) => {
 
         ///////////////----------- IF ADMIN -----------\\\\\\\\\\\\\\\\\\
         if(userAnswer.adminId){
+            console.log("An admin has connected");
             
-            // console.log(adminConnection);
+            //add adminConnection
+            connection.sessionId = userAnswer.adminSession;
             allConnections.adminConnections.push(connection);
+
+            const sessionId = userAnswer.adminSession;
+
+            const session = await getSessionDataWithId(sessionId);
+            const studentAnswers = session.answers; 
+
+            // console.log(studentAnswers);
+
+            connection.send(JSON.stringify(studentAnswers));
         
             return console.log(`Admin sent this : + `, userAnswer);
         }  
@@ -38,12 +48,16 @@ wss.on('connection', async (connection) => {
         ///////////////----------- IF USER -----------\\\\\\\\\\\\\\\\\\
         else{
 
+            console.log("A client has connected")
+            console.log(userAnswer)
+            connection.sessionId = userAnswer.id;
             allConnections.clientConnections.push(connection);
             
             try{
                 
+                //TODO: make connection {}
                 const idSession = userAnswer.id; 
-                const session = await getSessionWithId(idSession);
+                const session = await getSessionDataWithId(idSession);
                 const hostAnswerForm = await getFormsDataWithId(session.idForm);
                 
                 const responseToAnswers = verifyAnswers(userAnswer, hostAnswerForm);

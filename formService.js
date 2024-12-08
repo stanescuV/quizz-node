@@ -37,7 +37,7 @@ const getFormsDataWithId = async (id) => {
     }
 };
 
-const getSessionWithId = async (idSession) => {
+const getSessionDataWithId = async (idSession) => {
     try {
         const sessionRef = sessionsRef.doc(idSession);
         const docSnapshot = await sessionRef.get();
@@ -96,4 +96,4 @@ const insertIntoErrors = async (err) => {
 }
 
 
-module.exports = {getFormsData, getFormsDataWithId, insertNewAnswersIntoSessionTable, insertIntoErrors, getSessionWithId}
+module.exports = {getFormsData, getFormsDataWithId, insertNewAnswersIntoSessionTable, insertIntoErrors, getSessionDataWithId}
