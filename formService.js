@@ -3,6 +3,7 @@ const { db, FieldValue } = require("./firestore");
 const formsRef = db.collection('forms');
 const sessionsRef = db.collection('sessions');
 const errorsRef = db.collection('errors');
+const cookiesRef = db.collection('cookies');
 
 //get all forms from the DB // no use case ftm 
 const getFormsData = async () => {
@@ -56,7 +57,6 @@ const getSessionDataWithId = async (idSession) => {
     }
 };
 
-
 const insertNewAnswersIntoSessionTable = async (idSession, answers ) => {
 
     /*
@@ -80,14 +80,13 @@ const insertNewAnswersIntoSessionTable = async (idSession, answers ) => {
  
 }
 
-
 const insertIntoErrors = async (err) => {
 
 
     const error = { date: (new Date()).toString(), errMessage: JSON.stringify(err)}
 
     try{
-        sessionsRef.add(error)
+        errorsRef.add(error)
     } catch(err){
         console.log('There was an error while inserting the error', err)
 
@@ -95,5 +94,33 @@ const insertIntoErrors = async (err) => {
  
 }
 
+const insertIntoCookies = async (data) => {
+    try {
+      cookieString = Object.keys(data)[0]; 
+      
+      // Insert a new document with cookieUUID as the document ID
+      await cookiesRef.doc(cookieString).set(data[cookieString]);
+      
+      console.log(`Document with ID '${cookieString}' added/updated in 'cookies' collection.`);
+    } catch (error) {
+      console.error('Error adding document:', error);
+    }
+}
 
-module.exports = {getFormsData, getFormsDataWithId, insertNewAnswersIntoSessionTable, insertIntoErrors, getSessionDataWithId}
+const isCookieExist = async (stringCookie) => { 
+
+    const cookieRef = (await cookiesRef.doc(stringCookie).get()).data();
+    // console.log(cookieRef);
+
+    if(!cookieRef){
+        return false; 
+    }
+
+    return true;
+}
+  
+
+
+
+
+module.exports = {getFormsData, isCookieExist, getFormsDataWithId, insertNewAnswersIntoSessionTable, insertIntoErrors, getSessionDataWithId, insertIntoCookies}

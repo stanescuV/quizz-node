@@ -4,7 +4,7 @@ const WebSocket = require('ws');
 
 
 //firestore
-const {getFormsData, getFormsDataWithId, insertNewAnswersIntoSessionTable, insertIntoErrors, getSessionDataWithId} = require('./formService');
+const {getFormsData, isCookieExist, insertIntoCookies, getFormsDataWithId, insertNewAnswersIntoSessionTable, insertIntoErrors, getSessionDataWithId} = require('./formService');
 
 // const app = express();
 const port = 3001;
@@ -55,16 +55,24 @@ wss.on('connection', async (connection) => {
             
             try{
                 
-                //TODO: make connection {}
-                const idSession = userAnswer.id; 
-                const session = await getSessionDataWithId(idSession);
-                const hostAnswerForm = await getFormsDataWithId(session.idForm);
+                const cookieString = Object.keys(userAnswer.formDbCookie)[0];
+                console.log(cookieString);
+
+                if(!(await isCookieExist(cookieString))){
+                    insertIntoCookies(userAnswer.formDbCookie)
                 
-                const responseToAnswers = verifyAnswers(userAnswer, hostAnswerForm);
-                
-                insertNewAnswersIntoSessionTable(idSession, responseToAnswers)
-                return connection.send(JSON.stringify(responseToAnswers));
-                
+                    //TODO: make connection {}
+                    const idSession = userAnswer.id; 
+                    const session = await getSessionDataWithId(idSession);
+                    const hostAnswerForm = await getFormsDataWithId(session.idForm);
+                    
+                    const responseToAnswers = verifyAnswers(userAnswer, hostAnswerForm);
+                    
+                    insertNewAnswersIntoSessionTable(idSession, responseToAnswers)
+                    return connection.send(JSON.stringify(responseToAnswers));
+                };  
+
+                return connection.send('You already answered these questions')
             
             } catch (err){
                 
