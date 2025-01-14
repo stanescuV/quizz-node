@@ -77,6 +77,8 @@ const insertNewAnswersIntoSessionTable = async (idSession, answers) => {
         await sessionRef.update({
             answers: FieldValue.arrayUnion(...sessionsAnswers),
         });
+
+        console.log('New answer has been added in the database ')
     } catch (err) {
         console.log("There was an error while inserting the answers", err);
     }

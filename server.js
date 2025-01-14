@@ -81,7 +81,6 @@ wss.on("connection", async (connection) => {
                 console.log(cookieString);
 
                 //TODO: VERIFY EdgeCases
-                if (!(await isCookieExist(cookieString))) {
                     insertIntoCookies(userAnswer.formDbCookie);
 
                     const session = await getSessionDataWithId(sessionId);
@@ -94,7 +93,7 @@ wss.on("connection", async (connection) => {
                         hostAnswerForm
                     );
 
-                    insertNewAnswersIntoSessionTable(
+                    await insertNewAnswersIntoSessionTable(
                         sessionId,
                         responseToAnswers
                     );
@@ -111,10 +110,7 @@ wss.on("connection", async (connection) => {
 
 
 
-                    return;
-                }
 
-                return connection.send("You already answered these questions");
             } catch (err) {
                 //inserts error log into db on firestore
                 insertIntoErrors(err);
