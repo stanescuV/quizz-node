@@ -80,7 +80,9 @@ wss.on("connection", async (connection) => {
                 const cookieString = Object.keys(userAnswer.formDbCookie)[0];
                 console.log(cookieString);
 
-                //TODO: VERIFY EdgeCases
+
+                if (!(await isCookieExist(cookieString))) {
+
                     insertIntoCookies(userAnswer.formDbCookie);
 
                     const session = await getSessionDataWithId(sessionId);
@@ -99,18 +101,24 @@ wss.on("connection", async (connection) => {
                     );
 
                     // tell host page data has been modified
-                    const hostPageDataConnectionAdmin = allConnections?.adminConnections?.[sessionId];
+                    const hostPageDataConnectionAdmin =
+                        allConnections?.adminConnections?.[sessionId];
 
-                    if(!hostPageDataConnectionAdmin){
-                        console.log("Connection admin was not found for this session id")
+                    if (!hostPageDataConnectionAdmin) {
+                        console.log(
+                            "Connection admin was not found for this session id"
+                        );
                         return;
                     }
 
-                    hostPageDataConnectionAdmin.send(JSON.stringify({refresh: true}))
+                    hostPageDataConnectionAdmin.send(
+                        JSON.stringify({ refresh: true })
+                    );
+                    return;
+                }
 
-
-
-
+                return connection.send("You already answered these questions");
+                
             } catch (err) {
                 //inserts error log into db on firestore
                 insertIntoErrors(err);
