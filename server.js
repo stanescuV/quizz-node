@@ -4,8 +4,6 @@ const WebSocket = require("ws");
 
 //firestore
 const {
-    getFormsData,
-    isCookieExist,
     insertIntoCookies,
     getFormsDataWithId,
     insertNewAnswersIntoSessionTable,
@@ -18,6 +16,18 @@ const port = 3001;
 const wss = new WebSocket.Server({ port: port });
 
 const allConnections = { adminConnections: {}, clientConnections: {} };
+
+//TODO: Create folder and move this function somwhere else idk
+const isCookieExist = async (stringCookie) => {
+    const cookieRef = (await cookiesRef.doc(stringCookie).get()).data();
+    // console.log(cookieRef);
+
+    if (!cookieRef) {
+        return false;
+    }
+
+    return true;
+};
 
 wss.on("connection", async (connection) => {
     connection.on("message", async (msg) => {

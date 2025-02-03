@@ -112,20 +112,11 @@ const insertIntoCookies = async (data) => {
     }
 };
 
-const isCookieExist = async (stringCookie) => {
-    const cookieRef = (await cookiesRef.doc(stringCookie).get()).data();
-    // console.log(cookieRef);
 
-    if (!cookieRef) {
-        return false;
-    }
 
-    return true;
-};
 
 module.exports = {
     getFormsData,
-    isCookieExist,
     getFormsDataWithId,
     insertNewAnswersIntoSessionTable,
     insertIntoErrors,
