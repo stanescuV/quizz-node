@@ -9,6 +9,7 @@ const {
     insertNewAnswersIntoSessionTable,
     insertIntoErrors,
     getSessionDataWithId,
+    isCookieExist
 } = require("./formService");
 
 // const app = express();
@@ -18,16 +19,7 @@ const wss = new WebSocket.Server({ port: port });
 const allConnections = { adminConnections: {}, clientConnections: {} };
 
 //TODO: Create folder and move this function somwhere else idk
-const isCookieExist = async (stringCookie) => {
-    const cookieRef = (await cookiesRef.doc(stringCookie).get()).data();
-    // console.log(cookieRef);
 
-    if (!cookieRef) {
-        return false;
-    }
-
-    return true;
-};
 
 wss.on("connection", async (connection) => {
     connection.on("message", async (msg) => {
@@ -87,11 +79,11 @@ wss.on("connection", async (connection) => {
             allConnections.clientConnections[sessionId] = connection;
 
             try {
-                const cookieString = Object.keys(userAnswer.formDbCookie)[0];
-                console.log(cookieString);
+                // const cookieString = Object.keys(userAnswer.formDbCookie)[0];
+                // console.log(cookieString);
 
 
-                if (!(await isCookieExist(cookieString))) {
+                // if (!(await isCookieExist(cookieString))) {
 
                     insertIntoCookies(userAnswer.formDbCookie);
 
@@ -107,8 +99,12 @@ wss.on("connection", async (connection) => {
 
                     await insertNewAnswersIntoSessionTable(
                         sessionId,
-                        responseToAnswers
+                        responseToAnswers.formReadyToSend
                     );
+
+                    //send the correct number of answers to the user
+                    console.log( "This is Correct answer number", responseToAnswers.correctAnswersNumber);
+                    connection.send(JSON.stringify(responseToAnswers.correctAnswersNumber));
 
                     // tell host page data has been modified
                     const hostPageDataConnectionAdmin =
@@ -121,13 +117,17 @@ wss.on("connection", async (connection) => {
                         return;
                     }
 
+                    
+
                     hostPageDataConnectionAdmin.send(
                         JSON.stringify({ refresh: true })
                     );
-                    return;
-                }
 
-                return connection.send("You already answered these questions");
+
+                //     return;
+                // }
+
+                // return connection.send("You already answered these questions");
                 
             } catch (err) {
                 //inserts error log into db on firestore
