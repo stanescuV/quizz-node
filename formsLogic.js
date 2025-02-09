@@ -14,10 +14,12 @@ function verifyAnswers(userAnswer, adminForm) {
     //Make admin form as userAnswer so that it's easier to iterate over
     const adminFormConverted = convertFormEntityToFormular(adminForm);
     let isCorrectCount = 0;
+    let allQuestionsCount =0; 
 
     //TODO:  q1 q2 would be better than question1 and question2
     for (let i = 0; i < Object.keys(adminFormConverted).length; i++) {
         const currentQuestion = `question` + (1 + i);
+        allQuestionsCount++; 
         const selectedAnswerUser = userAnswer[currentQuestion].selectedOption;
         const correctAnswer = adminFormConverted[currentQuestion].selectedOption;
         // console.log(selectedAnswerUser, correctAnswer);
@@ -39,7 +41,7 @@ function verifyAnswers(userAnswer, adminForm) {
     
     console.log({ isCorrectCount });
 
-    return {formReadyToSend: formReadyToSend, correctAnswersNumber: isCorrectCount};
+    return {formReadyToSend: formReadyToSend, correctAnswersNumber: isCorrectCount, allQuestionsCount: allQuestionsCount};
 }
 
 module.exports = { verifyAnswers };

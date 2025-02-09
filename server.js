@@ -9,7 +9,7 @@ const {
     insertNewAnswersIntoSessionTable,
     insertIntoErrors,
     getSessionDataWithId,
-    isCookieExist
+    isCookieExist,
 } = require("./formService");
 
 // const app = express();
@@ -20,72 +20,72 @@ const allConnections = { adminConnections: {}, clientConnections: {} };
 
 //TODO: Create folder and move this function somwhere else idk
 
-
 wss.on("connection", async (connection) => {
     connection.on("message", async (msg) => {
         if (typeof msg === undefined) {
             return console.log("message is undefined");
         }
 
-        let userAnswer;
+        let message;
 
         try {
-            userAnswer = JSON.parse(msg); // {question1: {}}
+            message = JSON.parse(msg); // {question1: {}}
         } catch {
             console.log("Message is not JSON format");
             return;
         }
         //not safe if msg is json
-        // console.log(userAnswer);
+        console.log(message);
 
-        ///////////////----------- IF ADMIN -----------\\\\\\\\\\\\\\\\\\
-        if (userAnswer.adminId) {
-            console.log("An admin has connected");
+        switch (message.type) {
+            ///////////////----------- IF ADMIN -----------\\\\\\\\\\\\\\\\\\
+            case "AdminMessage": {
+                console.log("An admin has connected");
 
-            //TODO: CHANGE IN O(1) because now it s O(N)
-            const sessionId = userAnswer.adminSession;
+                //TODO: CHANGE IN O(1) because now it s O(N)
+                const sessionId = message.adminSession;
 
-            if (typeof sessionId !== "string") {
-                console.log("Session Id is not a string !! ");
-                return;
+                if (typeof sessionId !== "string") {
+                    console.log("Session Id is not a string !! ");
+                    return;
+                }
+
+                connection.sessionId = sessionId;
+                allConnections.adminConnections[sessionId] = connection;
+
+                const session = await getSessionDataWithId(sessionId);
+                const studentAnswers = session.answers;
+
+                // console.log(studentAnswers);
+
+                connection.send(JSON.stringify(studentAnswers));
+
+                return console.log(`Admin sent this : + `, message);
+                break;
             }
 
-            connection.sessionId = sessionId;
-            allConnections.adminConnections[sessionId] = connection;
+            ///////////////----------- IF USER -----------\\\\\\\\\\\\\\\\\\
+            case "UserAnswer": {
+                console.log("A client has connected");
+                console.log(message);
 
-            const session = await getSessionDataWithId(sessionId);
-            const studentAnswers = session.answers;
+                const sessionId = message.idSession;
 
-            // console.log(studentAnswers);
+                if (typeof sessionId !== "string") {
+                    console.log("Session Id is not a string !! ");
+                    return;
+                }
 
-            connection.send(JSON.stringify(studentAnswers));
+                connection.sessionId = sessionId;
+                allConnections.clientConnections[sessionId] = connection;
 
-            return console.log(`Admin sent this : + `, userAnswer);
-        }
+                try {
+                    // const cookieString = Object.keys(message.formDbCookie)[0];
+                    // console.log(cookieString);
 
-        ///////////////----------- IF USER -----------\\\\\\\\\\\\\\\\\\
-        else {
-            console.log("A client has connected");
-            console.log(userAnswer);
+                    // if (!(await isCookieExist(cookieString))) {
 
-            const sessionId = userAnswer.id;
-
-            if (typeof sessionId !== "string") {
-                console.log("Session Id is not a string !! ");
-                return;
-            }
-
-            connection.sessionId = sessionId;
-            allConnections.clientConnections[sessionId] = connection;
-
-            try {
-                // const cookieString = Object.keys(userAnswer.formDbCookie)[0];
-                // console.log(cookieString);
-
-
-                // if (!(await isCookieExist(cookieString))) {
-
-                    insertIntoCookies(userAnswer.formDbCookie);
+                    insertIntoCookies(message.formDbCookie);
 
                     const session = await getSessionDataWithId(sessionId);
                     const hostAnswerForm = await getFormsDataWithId(
@@ -93,7 +93,7 @@ wss.on("connection", async (connection) => {
                     );
 
                     const responseToAnswers = verifyAnswers(
-                        userAnswer,
+                        message,
                         hostAnswerForm
                     );
 
@@ -103,8 +103,18 @@ wss.on("connection", async (connection) => {
                     );
 
                     //send the correct number of answers to the user
-                    console.log( "This is Correct answer number", responseToAnswers.correctAnswersNumber);
-                    connection.send(JSON.stringify(responseToAnswers.correctAnswersNumber));
+                    console.log(
+                        "This is Correct answer number",
+                        responseToAnswers.correctAnswersNumber
+                    );
+                    connection.send(
+                        JSON.stringify({
+                            type: "CorrecAnswersQuestionCount",
+                            correctAnswersNumber:
+                                responseToAnswers.correctAnswersNumber,
+                            allQuestions: responseToAnswers.allQuestionsCount,
+                        })
+                    );
 
                     // tell host page data has been modified
                     const hostPageDataConnectionAdmin =
@@ -117,24 +127,37 @@ wss.on("connection", async (connection) => {
                         return;
                     }
 
-                    
-
                     hostPageDataConnectionAdmin.send(
                         JSON.stringify({ refresh: true })
                     );
 
+                    //     return;
+                    // }
 
-                //     return;
-                // }
+                    // return connection.send("You already answered these questions");
+                } catch (err) {
+                    //inserts error log into db on firestore
+                    insertIntoErrors(err);
+                    console.log(err);
 
-                // return connection.send("You already answered these questions");
-                
-            } catch (err) {
-                //inserts error log into db on firestore
-                insertIntoErrors(err);
-                console.log(err);
+                    return connection.send("Error while sending the answers");
+                }
+                break;
+            }
 
-                return connection.send("Error while sending the answers");
+            case "CookieQuery": {
+                if (isCookieExist(message.cookie)) {
+                    connection.send(JSON.stringify({
+                        type: "CookieExistsAlready",
+                        cookieMessageToShowOnFrontend:
+                            "You have already answered this form !",
+                    }));
+                }
+            }
+            default: {
+                return connection.send(
+                    "The message type was either missing or empty"
+                );
             }
         }
     });
