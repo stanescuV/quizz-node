@@ -10,6 +10,8 @@ const {
     insertIntoErrors,
     getSessionDataWithId,
     isCookieExist,
+    getCookieDataFromSessionWithIdSession,
+    vedemDupa,
 } = require("./formService");
 
 // const app = express();
@@ -35,15 +37,18 @@ wss.on("connection", async (connection) => {
             return;
         }
         //not safe if msg is json
-        console.log(message);
+        console.log({message});
+
+        let sessionId; 
 
         switch (message.type) {
+            
             ///////////////----------- IF ADMIN -----------\\\\\\\\\\\\\\\\\\
-            case "AdminMessage": {
+            case "AdminMessage": 
                 console.log("An admin has connected");
 
                 //TODO: CHANGE IN O(1) because now it s O(N)
-                const sessionId = message.adminSession;
+                sessionId = message.adminSession;
 
                 if (typeof sessionId !== "string") {
                     console.log("Session Id is not a string !! ");
@@ -62,14 +67,14 @@ wss.on("connection", async (connection) => {
 
                 return console.log(`Admin sent this : + `, message);
                 break;
-            }
+            
 
             ///////////////----------- IF USER -----------\\\\\\\\\\\\\\\\\\
-            case "UserAnswer": {
+            case "UserAnswer": 
                 console.log("A client has connected");
                 console.log(message);
 
-                const sessionId = message.idSession;
+                sessionId = message.idSession;
 
                 if (typeof sessionId !== "string") {
                     console.log("Session Id is not a string !! ");
@@ -80,12 +85,9 @@ wss.on("connection", async (connection) => {
                 allConnections.clientConnections[sessionId] = connection;
 
                 try {
-                    // const cookieString = Object.keys(message.formDbCookie)[0];
-                    // console.log(cookieString);
-
-                    // if (!(await isCookieExist(cookieString))) {
 
                     insertIntoCookies(message.formDbCookie);
+                    const cookieId = message.cookieId;
 
                     const session = await getSessionDataWithId(sessionId);
                     const hostAnswerForm = await getFormsDataWithId(
@@ -99,7 +101,8 @@ wss.on("connection", async (connection) => {
 
                     await insertNewAnswersIntoSessionTable(
                         sessionId,
-                        responseToAnswers.formReadyToSend
+                        responseToAnswers.formReadyToSend,
+                        cookieId
                     );
 
                     //send the correct number of answers to the user
@@ -107,6 +110,7 @@ wss.on("connection", async (connection) => {
                         "This is Correct answer number",
                         responseToAnswers.correctAnswersNumber
                     );
+
                     connection.send(
                         JSON.stringify({
                             type: "CorrecAnswersQuestionCount",
@@ -131,34 +135,53 @@ wss.on("connection", async (connection) => {
                         JSON.stringify({ refresh: true })
                     );
 
-                    //     return;
-                    // }
-
-                    // return connection.send("You already answered these questions");
+               
                 } catch (err) {
                     //inserts error log into db on firestore
                     insertIntoErrors(err);
                     console.log(err);
 
-                    return connection.send("Error while sending the answers");
+                    return connection.send(JSON.stringify({err: "Error while sending the answers"}));
                 }
+                 
                 break;
-            }
+            
 
-            case "CookieQuery": {
-                if (isCookieExist(message.cookie)) {
+            //////////////------------IF COOKIE FROM USER --------\\\\\\\\\\\\\\\\
+            case "CookieQuery": 
+                
+            //TODO: Arata i user ului ce intrebari a gresit si care erau raspunsurile corecte 
+
+                // insert new function firestore
+                if (await isCookieExist(message.cookie)) {
+
+                    const sessionId = message.idSession;
+                   
+
+                    //get all the session data
+                    const sessionData = vedemDupa(sessionId);
+
+                    // sessionData.answers.map((answer)=>{
+                    //    if(answer[cookieUser] === message.cookie){
+                           
+                    //    }
+                    // })
+
                     connection.send(JSON.stringify({
                         type: "CookieExistsAlready",
                         cookieMessageToShowOnFrontend:
                             "You have already answered this form !",
                     }));
                 }
-            }
-            default: {
-                return connection.send(
-                    "The message type was either missing or empty"
+                break;
+    
+            
+            default: 
+                console.log("hello world from default")
+                return connection.send(JSON.stringify({err: "The message type was either missing or empty"})
                 );
-            }
+                
+            
         }
     });
 });

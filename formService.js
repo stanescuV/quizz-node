@@ -1,9 +1,10 @@
-const { db, FieldValue } = require("./firestore");
+const { db, FieldValue} = require("./firestore");
 
 const formsRef = db.collection("forms");
 const sessionsRef = db.collection("sessions");
 const errorsRef = db.collection("errors");
 const cookiesRef = db.collection("cookies");
+
 
 //get all forms from the DB // no use case ftm
 const getFormsData = async () => {
@@ -55,7 +56,35 @@ const getSessionDataWithId = async (idSession) => {
     }
 };
 
-const insertNewAnswersIntoSessionTable = async (idSession, answers) => {
+const vedemDupa = async (idSession) =>{
+
+    //TODO: De cautat in documentatie firestore cum sa accedezi la o sub colectie !
+    const answersFromSession = db.doc("sessions/" + idSession )
+    console.log({answersFromSession})
+
+}
+
+const getCookieDataFromSessionWithIdSession = async (idSession) => {
+    try {
+        const sessionRef = sessionsRef.doc(idSession);
+    
+        const docSnapshot = await sessionRef.get();
+
+        if (!docSnapshot.exists) {
+            console.log(`No document found with ID: ${id}`);
+            return null;
+        }
+
+        const sessionData = docSnapshot.data();
+        const cokieData = sessionData.cookieUser;
+        return cokieData;
+    } catch (error) {
+        console.error("Error fetching form by ID:", error);
+        return null;
+    }
+};
+
+const insertNewAnswersIntoSessionTable = async (idSession, answers, cookieId) => {
     /*
     *
     answers = {
@@ -68,10 +97,11 @@ const insertNewAnswersIntoSessionTable = async (idSession, answers) => {
     try {
         const sessionRef = sessionsRef.doc(idSession);
 
-        //TODO: MODIFICA ASTA SI PUNE IN ANSWER DATE
+       
         const sessionsAnswers = Object.values(answers);
         sessionsAnswers.forEach((answer) => {
             answer.date = new Date().toString();
+            answer.cookieUser = cookieId;
         });
         console.log({ sessionsAnswers });
         await sessionRef.update({
@@ -132,4 +162,6 @@ module.exports = {
     getSessionDataWithId,
     insertIntoCookies,
     isCookieExist,
+    getCookieDataFromSessionWithIdSession,
+    vedemDupa,
 };
