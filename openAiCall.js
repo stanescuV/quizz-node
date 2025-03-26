@@ -18,7 +18,7 @@ function startServer() {
 
   const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
 
-  const OptionSchema = z.array(z.string());
+  const OptionSchema = z.array(z.string(), 4);
 
   const QuestionSchema = z.object({
     question: z.string(),
@@ -38,7 +38,7 @@ function startServer() {
         { role: 'system', content: 'Generate a JSON, of 5 objects maximum, based on the user query.' },
         {
           role: 'user',
-          content: `Generate a form based on the schema provided for this query: ${promt}`
+          content: `Generate a form based on the schema provided for this query: ${promt}.  The correct answer of each question should be noted in selectedOption, exemple: option2. Very important : put the correct answer in a random position each time, try to not repeat.`
         }
       ],
       response_format: zodResponseFormat(FormSchema, 'form')
