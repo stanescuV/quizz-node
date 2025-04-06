@@ -1,6 +1,11 @@
 // const express = require('express');
 const { verifyAnswers } = require('./formsLogic');
 
+
+const args = process.argv.slice(2);
+console.log(args);
+
+
 //HTTP Server OPEN AI 
 const { startServer } = require('./openAiCall');
 
